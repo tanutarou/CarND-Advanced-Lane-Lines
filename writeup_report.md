@@ -1,0 +1,135 @@
+## Writeup Report
+
+---
+
+**Advanced Lane Finding Project**
+
+The goals / steps of this project are the following:
+
+* Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
+* Apply a distortion correction to raw images.
+* Use color transforms, gradients, etc., to create a thresholded binary image.
+* Apply a perspective transform to rectify binary image ("birds-eye view").
+* Detect lane pixels and fit to find the lane boundary.
+* Determine the curvature of the lane and vehicle position with respect to center.
+* Warp the detected lane boundaries back onto the original image.
+* Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+
+[//]: # (Image References)
+
+[image1]: ./imgs/distort.png "Undistorted"
+[image2]: ./imgs/distort_road.png "Road Transformed"
+[image3]: ./imgs/pipeline.png "Binary Example"
+[image4]: ./imgs/warp_rgb.png "Warp Example"
+[image5]: ./imgs/warp_bin.png "Warp bin Example"
+[image6]: ./examples/color_fit_lines.jpg "Fit Visual"
+[image7]: ./examples/example_output.jpg "Output"
+[video1]: ./project_video.mp4 "Video"
+
+## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
+
+### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+
+---
+
+### Camera Calibration
+
+#### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
+
+The code for this step is contained in the first code cell of the IPython notebook located in "solution.ipynb".  
+
+I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+
+`cv2::findChessboardCorners` return zero if it failed corner detection. So I used this flag and saved only corners which is detected successfully.
+
+I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+
+![alt text][image1]
+
+### Pipeline (single images)
+
+#### 1. Provide an example of a distortion-corrected image.
+
+To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one.
+![alt text][image2]
+
+* I got objpoints and imgpoints in before section. So, I can do distortion correction easily by using `cv2.undistort`(We just call `cal_undistort()` in the first code cell of the "solution.ipynb").
+
+
+#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+
+I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at L14, L18 and L22 in the 3rd code cell of "solution.ipynb").
+
+I used L channel and S channel in HLS colorspace and Sobel filter to create a binary image.
+I thought using L channel doesn't need to detect lanes for 'project_video.mp4'. But, I think it need to detect other videos like 'challenge_video.mp4'.
+
+* I selected the threshold [170, 255] for S channel
+* I selected the threshold [240, 255] for L channel
+* I selected the threshold [20, 100] for Sobelx filter
+
+Here's an example of my output for this step.  
+
+![alt text][image3]
+
+#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+
+The code for my perspective transform includes a function called `warp_transform()`, which appears in lines 1 through 15 in the 4th code cell of "solution.ipynb".  The `warp_transform()` function takes as inputs an image (`img`). I chose the hardcode the source and destination points in the following manner(This is same to the value of writeup_template.md. Because, this code adoptive to image size. It's good to use for videos with different size):
+
+```python
+src = np.float32(
+    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
+    [((img_size[0] / 6) - 10), img_size[1]],
+    [(img_size[0] * 5 / 6) + 60, img_size[1]],
+    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
+dst = np.float32(
+    [[(img_size[0] / 4), 0],
+    [(img_size[0] / 4), img_size[1]],
+    [(img_size[0] * 3 / 4), img_size[1]],
+    [(img_size[0] * 3 / 4), 0]])
+```
+
+This resulted in the following source and destination points:
+
+| Source        | Destination   | 
+|:-------------:|:-------------:| 
+| 585, 460      | 320, 0        | 
+| 203, 720      | 320, 720      |
+| 1127, 720     | 960, 720      |
+| 695, 460      | 960, 0        |
+
+My perspective transform was roughly working as expected. It looks roughly parallel lines.
+
+![alt text][image4]
+![alt text][image5]
+
+#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+
+Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+
+![alt text][image5]
+
+#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+
+I did this in lines # through # in my code in `my_other_file.py`
+
+#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+
+I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+
+![alt text][image6]
+
+---
+
+### Pipeline (video)
+
+#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+
+Here's a [link to my video result](./project_video.mp4)
+
+---
+
+### Discussion
+
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+
+Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
