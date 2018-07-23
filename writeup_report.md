@@ -23,8 +23,8 @@ The goals / steps of this project are the following:
 [image4]: ./imgs/warp_rgb.png "Warp Example"
 [image5]: ./imgs/warp_bin.png "Warp bin Example"
 [image6]: ./imgs/fitting.png "Fit Visual"
-[image7]: ./imgs/visualize.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image7]: ./imgs/visualize.png "Output"
+[video1]: ./test_videos_output/project_video.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -61,7 +61,7 @@ To demonstrate this step, I will describe how I apply the distortion correction 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at L14, L18 and L22 in the 3rd code cell of "solution.ipynb").
 
 I used L channel and S channel in HLS colorspace and Sobel filter to create a binary image.
-I thought using L channel doesn't need to detect lanes for 'project_video.mp4'. But, I think it need to detect other videos like 'challenge_video.mp4'.
+I thought using L channel doesn't need to detect lanes for 'project_video.mp4'. But, I thought it need to detect lanes for other videos like 'challenge_video.mp4'.
 
 * I selected the threshold [170, 255] for S channel
 * I selected the threshold [240, 255] for L channel
@@ -73,7 +73,7 @@ Here's an example of my output for this step.
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warp_transform()`, which appears in lines 1 through 15 in the 4th code cell of "solution.ipynb".  The `warp_transform()` function takes as inputs an image (`img`). I chose the hardcode the source and destination points in the following manner(This is same to the value of writeup_template.md. Because, this code adoptive to image size. It's good to use for videos with different size):
+The code for my perspective transform includes a function called `warp_transform()`, which appears in lines 1 through 15 in the 4th code cell of "solution.ipynb".  The `warp_transform()` function takes as inputs an image (`img`). I chose the hardcode the source and destination points in the following manner(This is same to the value of writeup_template.md. Because, this code adopt to image size. It's good to use for videos with different size):
 
 ```python
 src = np.float32(
@@ -107,14 +107,14 @@ I think selecting the hardcode the source and destination points are not robust 
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-To identify lane-line pixels, I used searching from previous polynomial approach. It decides search area is around previous polynomial curve. Because, lane curves doesn't change drastically in real. Surrounding range was decided by "margin" (L62 at 5th code cell of "solution.ipynb").
+To identify lane-line pixels, I used searching from previous polynomial approach(L59-L110 at 5th code cell of "solution.ipynb"). It decides search area is around previous polynomial curve. Because, lane curves doesn't change drastically in real. Surrounding range was decided by "margin" (L62 at 5th code cell of "solution.ipynb").
 
-I used the points of this area for lane fitting.
+I used the points of this area(green area in the below image) for lane fitting.
 I fit my lane lines with a 2nd order polynomial kinda like this:
 
 ![alt text][image6]
 
-I made `mirror lane` program too. It suppose left lane and right lane are exactlly parallel. I considered many points for fitting is higher confidence. So if the confidence of one side lane is high, mirroring it for other side make good results. But it was not effective for `project_video.mp4`. So, I commented out it.
+I made 'mirror lane' program too. It suppose left lane and right lane are exactlly parallel. I considered many points for fitting is higher confidence. So if the confidence of one side lane is high, mirroring it for other side make good results. But it was not effective for `project_video.mp4`. So, I commented out it.
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
@@ -138,7 +138,7 @@ Here is an example of my result on a test image:
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./test_videos_output/project_video.mp4)
 
 ---
 
@@ -149,8 +149,9 @@ Here's a [link to my video result](./project_video.mp4)
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
 
 * Problems I faced in this project
- * I faced the problem in the camera calibration phase. In `camera_cal` directory, corners in some pictures cannot be detected by 'cv2.findChessboardCorners()'. So, I need to judge the return value 'cv2.findChessboardCorners' whether it detected successfully.
- * I faced the problem in the color transformation phase. Firstly, I used S channel only. It works well for 'project_video.mp4'. But it doesn't work for 'challenge.mp4'. Because, S channel couldn't extract the information of right lane. So, I added L channel information which can extract the information of right lane easily.
+  * I faced the problem in the camera calibration phase. In `camera_cal` directory, corners in some pictures cannot be detected by 'cv2.findChessboardCorners()'. So, I need to judge the return value 'cv2.findChessboardCorners' whether it detected successfully.
+  * I faced the problem in the color transformation phase. Firstly, I used S channel only. It works well for 'project_video.mp4'. But it doesn't work for 'challenge.mp4'. Because, S channel couldn't extract the information of right lane. So, I added L channel information which can extract the information of right lane easily.
 
 * My pipeline might fail when the point of one side lane cannot be detected. It means there is no points for fitting. It may be throw errors. To prevent this problem, I need to use the previous polynomial for this case. My program is weak for no lane detection frame.
 * My program uses previous information(previous polynomial for deciding searching area), but not sufficient. If I use famous tracking algorithm like Kalman Filter or Particle Filter, my lane detector may become more robust.
+* My program select the hardcode the source and destination points for perspective transformation. Perspective transformation can be done by using intrinsic and extrinsic camera. It may improve robustness of the transformation.
