@@ -60,10 +60,11 @@ To demonstrate this step, I will describe how I apply the distortion correction 
 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at L14, L18 and L22 in the 3rd code cell of "solution.ipynb").
 
-I used L channel and S channel in HLS colorspace and Sobel filter to create a binary image.
-I thought using L channel doesn't need to detect lanes for 'project_video.mp4'. But, I thought it need to detect lanes for other videos like 'challenge_video.mp4'.
+I used L channel in HLS colorspace, HSV color space and Sobel filter to create a binary image.
+I thought HSV color space is useful to extract white segments and Sobel filter can extract solid line easily. Using L channel doesn't need to detect lanes for 'project_video.mp4'. But, I thought it need to detect lanes for other videos like 'challenge_video.mp4'.
 
-* I selected the threshold [170, 255] for S channel
+
+* I selelcted the range [0, 0, 170] - [255, 25, 255] to extract white segments in HSV colorspace
 * I selected the threshold [240, 255] for L channel
 * I selected the threshold [20, 100] for Sobelx filter
 
@@ -114,7 +115,10 @@ I fit my lane lines with a 2nd order polynomial kinda like this:
 
 ![alt text][image6]
 
+I averaged polynomial parameters in 10 frames. It make robust lane detection.
+
 I made 'mirror lane' program too. It suppose left lane and right lane are exactlly parallel. I considered many points for fitting is higher confidence. So if the confidence of one side lane is high, mirroring it for other side make good results. But it was not effective for `project_video.mp4`. So, I commented out it.
+
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
